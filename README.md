@@ -30,10 +30,10 @@ An `application.conf` file needs to be created in `src/main/resources` with the 
 lagom {
   discovery {
     zookeeper {
-      server-hostname = "127.0.0.1"  # hostname or IP-address for the ZooKeeper server
-      server-port     = 2181         # port for the ZooKeeper server
-      uri-scheme     = "http"        # for example: http or https
-      routing-policy = "round-robin" # valid routing policies: first, random, round-robin
+      server-hostname = "127.0.0.1"   # hostname or IP-address for the ZooKeeper server
+      server-port     = 2181          # port for the ZooKeeper server
+      uri-scheme      = "http"        # for example: http or https
+      routing-policy  = "round-robin" # valid routing policies: first, random, round-robin
     }
   }
 }
