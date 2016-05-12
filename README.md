@@ -44,6 +44,11 @@ lagom {
 The second step is to register each of your services in ZooKeeper. This can be done either directly using the Apache ZooKeeper API, or using the [Apache Curator](https://curator.apache.org) library, or by using the `ZooKeeperServiceRegistry` API provided by this library. Here is some example code of how to use it in a service: 
 
 ```java
+import com.lightbend.lagom.discovery.zookeeper.*;
+import org.apache.curator.utils.CloseableUtils;
+import org.apache.curator.x.discovery.ServiceInstance;
+import org.apache.curator.x.discovery.UriSpec;
+
 /**
  * This shows a very simplified method of registering an instance with the service discovery. Each individual
  * instance in your distributed set of applications would create an instance of something similar to ExampleServer,

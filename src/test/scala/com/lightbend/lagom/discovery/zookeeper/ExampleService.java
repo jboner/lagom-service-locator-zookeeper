@@ -4,8 +4,6 @@ import org.apache.curator.utils.CloseableUtils;
 import org.apache.curator.x.discovery.ServiceInstance;
 import org.apache.curator.x.discovery.UriSpec;
 
-import java.io.Closeable;
-
 /**
  * This shows a very simplified method of registering an instance with the service discovery. Each individual
  * instance in your distributed set of applications would create an instance of something similar to ExampleServer,
