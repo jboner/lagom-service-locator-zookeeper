@@ -16,12 +16,6 @@ This service locator is only enabled during `Prod` mode, during `Dev` mode the r
 The second step is to register each of your services in ZooKeeper. This can be done either directly using the Apache ZooKeeper API, or using the [Apache Curator](https://curator.apache.org) library, or by using the `ZooKeeperServiceRegistry` API provided by this library. Here is some example code of how to use it in a service: 
 
 ```java
-import org.apache.curator.utils.CloseableUtils;
-import org.apache.curator.x.discovery.ServiceInstance;
-import org.apache.curator.x.discovery.UriSpec;
-
-import java.io.Closeable;
-
 /**
  * This shows a very simplified method of registering an instance with the service discovery. Each individual
  * instance in your distributed set of applications would create an instance of something similar to ExampleServer,
@@ -35,12 +29,12 @@ public class ExampleService {
             String serviceName,
             String serviceId,
             String serviceAddress,
-            int servicePort,
-            String zkUrl,
-            String zkServicesPath) throws Exception {
+            int servicePort) throws Exception {
 
         // start up the ZooKeeper-based service registry
-        registry = new ZooKeeperServiceRegistry(zkUrl, zkServicesPath);
+        registry = new ZooKeeperServiceRegistry(
+                ZooKeeperServiceLocator.zkUri(),
+                ZooKeeperServiceLocator.zkServicesPath());
         registry.start();
 
         // create the service instance for the service discovery
@@ -63,16 +57,13 @@ public class ExampleService {
     }
 
     public static void main(String[] args) throws Exception {
-        String zkURL = "localhost:2181";
-        String zkServicesPath = "/lagom/services";
-
         String serviceName = "testService";
         String serviceId = "uniqueId";
         String serviceAddress = "localhost";
         int servicePort = 9000;
 
         ExampleService service = new ExampleService(
-                serviceName, serviceId, serviceAddress, servicePort, zkURL, zkServicesPath);
+                serviceName, serviceId, serviceAddress, servicePort);
 
         service.stop();
     }

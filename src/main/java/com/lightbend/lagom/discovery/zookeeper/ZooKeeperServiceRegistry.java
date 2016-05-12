@@ -43,21 +43,13 @@ public class ZooKeeperServiceRegistry implements Closeable {
         serviceDiscovery.unregisterService(serviceInstance);
     }
 
-    public CompletableFuture<Collection<URI>> locateAll(String serviceName) {
+    public CompletableFuture<Collection<URI>> locate(String serviceName) {
         return CompletableFuture.supplyAsync(() -> {
-            return locate(serviceName);
+            return locateBlocking(serviceName);
         });
     }
 
-    public CompletableFuture<Optional<URI>> locateFirst(String serviceName) {
-        return CompletableFuture.supplyAsync(() -> {
-            Collection<URI> uris = locate(serviceName);
-            if (uris.isEmpty()) throw new RuntimeException();
-            else return Optional.of(uris.iterator().next());
-        });
-    }
-
-    protected Collection<URI> locate(String serviceName) {
+    protected Collection<URI> locateBlocking(String serviceName) {
         try {
             return serviceDiscovery.queryForInstances(serviceName).stream().map(instance -> {
                 String scheme = instance.getUriSpec().getParts().get(0).getValue();
