@@ -1,19 +1,20 @@
 package com.lightbend.lagom.discovery.zookeeper
 
-import java.io.{File, Closeable}
+import java.io.{Closeable, File}
 import java.net.{InetAddress, URI}
 import java.util.Optional
-import java.util.concurrent.{ConcurrentHashMap, CompletionStage}
+import java.util.concurrent.{CompletionStage, ConcurrentHashMap}
 import java.util.function.{Function => JFunction}
 import javax.inject.Inject
 
+import com.lightbend.lagom.javadsl.api.Descriptor.Call
 import com.lightbend.lagom.javadsl.api.ServiceLocator
 import com.typesafe.config.ConfigException.BadValue
-import org.apache.curator.framework.{CuratorFrameworkFactory, CuratorFramework}
+import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.utils.CloseableUtils
-import org.apache.curator.x.discovery.{ServiceInstance, ServiceDiscoveryBuilder, ServiceDiscovery}
-import play.api.{Mode, Environment, Configuration}
+import org.apache.curator.x.discovery.{ServiceDiscovery, ServiceDiscoveryBuilder, ServiceInstance}
+import play.api.{Configuration, Environment, Mode}
 
 import scala.collection.concurrent.Map
 import scala.collection.convert.decorateAsScala._
@@ -52,12 +53,15 @@ class ZooKeeperServiceLocator @Inject()(implicit ec: ExecutionContext) extends S
   override def locate(name: String): CompletionStage[Optional[URI]] =
     locateAsScala(name).map(_.asJava).toJava
 
-  override def doWithService[T](name: String, block: JFunction[URI, CompletionStage[T]]): CompletionStage[Optional[T]] =
+
+
+  override def doWithService[T](name: String, serviceCall: Call[_, _], block: JFunction[URI, CompletionStage[T]]): CompletionStage[Optional[T]] =
     locateAsScala(name).flatMap { uriOpt =>
-      uriOpt.fold(Future.successful(Optional.empty[T])) { uri =>
-        block.apply(uri).toScala.map(Optional.of(_))
-      }
-    }.toJava
+    uriOpt.fold(Future.successful(Optional.empty[T])) { uri =>
+      block.apply(uri).toScala.map(Optional.of(_))
+    }
+  }.toJava
+
 
   private def locateAsScala(name: String): Future[Option[URI]] = {
     val instances: List[ServiceInstance[String]] = serviceDiscovery.queryForInstances(name).asScala.toList
@@ -111,4 +115,8 @@ class ZooKeeperServiceLocator @Inject()(implicit ec: ExecutionContext) extends S
         else address
       new URI(s"$scheme://$serviceAddress:${service.getPort}")
     }
+
+  override def locate(name: String, serviceCall: Call[_, _]): CompletionStage[Optional[URI]] =
+    locateAsScala(name).map(_.asJava).toJava
+
 }
