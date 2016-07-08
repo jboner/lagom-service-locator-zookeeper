@@ -21,7 +21,7 @@ class ZooKeeperServiceDiscoverySpec extends WordSpecLike with Matchers {
   val zkServerPort = 2181
   val zkUrl = s"$serviceAddress:$zkServerPort"
   val serviceUriSpec = new UriSpec("{scheme}://{serviceAddress}:{servicePort}")
-  val localAddress = InetAddress.getLocalHost.getHostAddress
+  val localAddress = "127.0.0.1"
 
   def withServiceDiscovery(testCode: ZooKeeperServiceLocator => ZooKeeperServiceRegistry => ServiceDiscovery[String] => Any): Unit = {
     import scala.concurrent.ExecutionContext.Implicits._
