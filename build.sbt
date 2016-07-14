@@ -5,7 +5,7 @@ name := "lagom-service-locator-zookeeper"
 version := "1.0.0-SNAPSHOT"
 
 scalaVersion := "2.11.8"
-
+scalacOptions += "-target:jvm-1.8"
 val lagomVersion = "1.0.0-RC1"
 
 libraryDependencies ++= Seq(
