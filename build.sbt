@@ -3,6 +3,7 @@ organization := "com.lightbend.lagom"
 name := "lagom-service-locator-zookeeper"
 
 version := "1.0.0-SNAPSHOT"
+javaHome := Some(file(sys.env("JAVA_HOME")))
 
 scalaVersion := "2.11.8"
 scalacOptions += "-target:jvm-1.8"
