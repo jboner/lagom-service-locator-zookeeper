@@ -7,7 +7,7 @@ javaHome := Some(file(sys.env.getOrElse("JAVA_HOME","")))
 
 scalaVersion := "2.11.8"
 scalacOptions += "-target:jvm-1.8"
-val lagomVersion = "1.0.0-RC1"
+val lagomVersion = "1.0.0"
 
 javacOptions ++= Seq("-source", "1.8", "-target", "1.8", "-Xlint")
 
