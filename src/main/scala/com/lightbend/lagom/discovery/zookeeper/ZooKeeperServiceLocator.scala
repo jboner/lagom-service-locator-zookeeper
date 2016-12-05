@@ -14,6 +14,7 @@ import org.apache.curator.framework.{CuratorFramework, CuratorFrameworkFactory}
 import org.apache.curator.retry.ExponentialBackoffRetry
 import org.apache.curator.utils.CloseableUtils
 import org.apache.curator.x.discovery.{ServiceDiscovery, ServiceDiscoveryBuilder, ServiceInstance}
+import com.typesafe.config.{ Config => TSConfig }
 import play.api.{Configuration, Environment, Mode}
 
 import scala.collection.concurrent.Map
@@ -23,18 +24,70 @@ import scala.compat.java8.OptionConverters._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Random
 
-object ZooKeeperServiceLocator {
-  val config = Configuration.load(Environment(new File("."), getClass.getClassLoader, Mode.Prod)).underlying
-  val serverHostname = config.getString("lagom.discovery.zookeeper.server-hostname")
-  val serverPort     = config.getInt("lagom.discovery.zookeeper.server-port")
-  val scheme         = config.getString("lagom.discovery.zookeeper.uri-scheme")
-  val routingPolicy  = config.getString("lagom.discovery.zookeeper.routing-policy")
-  val zkUri = s"$serverHostname:$serverPort"
-  val zkServicesPath = "/lagom/services"
+trait ZooKeeperServiceLocatorConfig {
+  def serverHostname:String
+  def serverPort:Int
+  def scheme:String
+  def routingPolicy:String
+  def zkServicesPath:String
+  def zkUri:String
 }
 
-class ZooKeeperServiceLocator @Inject()(implicit ec: ExecutionContext) extends ServiceLocator with Closeable {
+object ZooKeeperServiceLocator {
+  case class Config(serverHostname:String,
+                    serverPort:Int,
+                    scheme:String, // Technically should be another type
+                    routingPolicy:String, // Technically should be another type
+                    zkServicesPath:String) extends ZooKeeperServiceLocatorConfig {
+    def zkUri = ZooKeeperServiceLocator.zkUri(serverHostname,serverPort)
+  }
+
+  def javaConfig(serverHostname:String,
+                 serverPort:Int,
+                 scheme:String,
+                 routingPolicy:String,
+                 zkServicesPath:String): ZooKeeperServiceLocatorConfig =
+    Config(serverHostname,
+           serverPort,
+           scheme,
+           routingPolicy,
+           zkServicesPath)
+
+  def fromConfigurationWithPath(in:Configuration,
+                                path:String = defaultConfigPath):Config =
+    fromConfiguration(in.getConfig(path).get)
+
+  def fromConfiguration(in:Configuration):Config =
+    fromConfig(in.underlying)
+
+  def fromConfig(in:TSConfig):Config =
+    Config(serverHostname = in.getString("server-hostname"),
+           serverPort     = in.getInt("server-port"),
+           scheme         = in.getString("uri-scheme"),
+           routingPolicy  = in.getString("routing-policy"),
+           zkServicesPath = defaultZKServicesPath)
+
+  val defaultConfigPath = "lagom.discovery.zookeeper"
+  val defaultZKServicesPath = "/lagom/services"
+  def zkUri(serverHostname:String, serverPort:Int):String = s"$serverHostname:$serverPort"
+}
+
+class ZooKeeperServiceLocator @Inject() (serverHostname:String,
+                                         serverPort:Int,
+                                         scheme:String,
+                                         routingPolicy:String,
+                                         zkServicesPath:String,
+                                         zkUri:String)(implicit ec: ExecutionContext) extends ServiceLocator with Closeable {
   import ZooKeeperServiceLocator._
+
+  @Inject()
+  def this(config:ZooKeeperServiceLocator.Config)(implicit ec: ExecutionContext) =
+    this(config.serverHostname,
+         config.serverPort,
+         config.scheme,
+         config.routingPolicy,
+         config.zkServicesPath,
+         config.zkUri)(ec)
 
   private val zkClient: CuratorFramework =
     CuratorFrameworkFactory.newClient(zkUri, new ExponentialBackoffRetry(1000, 3))

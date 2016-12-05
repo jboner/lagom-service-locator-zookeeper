@@ -13,7 +13,9 @@ import javax.inject.Singleton
  */
 class ZooKeeperServiceLocatorModule extends Module {
 
-  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] =
-    if (environment.mode == Mode.Prod) Seq(bind[ServiceLocator].to[ZooKeeperServiceLocator].in[Singleton])
-    else Seq.empty
+  override def bindings(environment: Environment, configuration: Configuration): Seq[Binding[_]] = {
+    Seq(bind[ZooKeeperServiceLocator.Config].toInstance(ZooKeeperServiceLocator.fromConfiguration(configuration)).in[Singleton]) ++
+    (if (environment.mode == Mode.Prod) Seq(bind[ServiceLocator].to[ZooKeeperServiceLocator].in[Singleton])
+     else Seq.empty)
+  }
 }
