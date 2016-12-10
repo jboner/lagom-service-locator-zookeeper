@@ -1,7 +1,7 @@
 organization := "org.deeplearning4j"
 
 name := "lagom-service-locator-zookeeper"
-val lagomVersion = "1.1.0-RC1"
+val lagomVersion = "1.3.0-M1"
 
 version := lagomVersion
 javaHome := Some(file(sys.env.getOrElse("JAVA_HOME","")))
