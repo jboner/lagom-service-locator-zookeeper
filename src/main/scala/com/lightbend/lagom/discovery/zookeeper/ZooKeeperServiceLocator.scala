@@ -72,13 +72,12 @@ object ZooKeeperServiceLocator {
   def zkUri(serverHostname:String, serverPort:Int):String = s"$serverHostname:$serverPort"
 }
 
-class ZooKeeperServiceLocator @Inject() (serverHostname:String,
-                                         serverPort:Int,
-                                         scheme:String,
-                                         routingPolicy:String,
-                                         zkServicesPath:String,
-                                         zkUri:String)(implicit ec: ExecutionContext) extends ServiceLocator with Closeable {
-  import ZooKeeperServiceLocator._
+class ZooKeeperServiceLocator (serverHostname:String,
+                               serverPort:Int,
+                               scheme:String,
+                               routingPolicy:String,
+                               zkServicesPath:String,
+                               zkUri:String)(implicit ec: ExecutionContext) extends ServiceLocator with Closeable {
 
   @Inject()
   def this(config:ZooKeeperServiceLocator.Config)(implicit ec: ExecutionContext) =
